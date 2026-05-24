@@ -27,7 +27,7 @@ import {
 import * as Location from 'expo-location';
 
 import { auth } from '../config/firebase';
-import { signOut } from '@firebase/auth';
+import { signOut } from 'firebase/auth';
 
 const { width } = Dimensions.get('window');
 
@@ -277,7 +277,7 @@ const MAP_HTML = `
         // Real-time directions API query helper (OpenRouteService with OSRM fallback)
         window.fetchRealRoute = function(startLat, startLng, endLat, endLng) {
             // ORS Free plan requires an API key - we provide a standard active playground key, and fallback seamlessly!
-            const ORS_API_KEY = '5b3ce3597851110001cf6248ccad6fde472c4314b9c1d93d18c148bb';
+            const ORS_API_KEY = '__ORS_API_KEY__';
             const orsUrl = 'https://api.openrouteservice.org/v2/directions/driving-car?api_key=' + ORS_API_KEY + '&start=' + startLng + ',' + startLat + '&end=' + endLng + ',' + endLat;
 
             fetch(orsUrl)
@@ -470,7 +470,7 @@ export default function DashboardScreen({ onProfilePress, evInfo }: DashboardScr
   }
   
   const [stations, setStations] = useState<OCMStation[]>([]);
-  const OCM_API_KEY = '8017d8d0-ac89-4fd8-ad9f-c074f9ac3a95'; // Registered free app key for EVsNAVI
+  const OCM_API_KEY = process.env.EXPO_PUBLIC_OCM_API_KEY || ''; // Loaded from environment variables
 
   const fetchNearbyStations = async (lat: number, lng: number) => {
     const url = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${lng}&distance=15&maxresults=5&key=${OCM_API_KEY}`;
@@ -829,7 +829,7 @@ export default function DashboardScreen({ onProfilePress, evInfo }: DashboardScr
               <WebView
                 ref={webviewRef}
                 originWhitelist={['*']}
-                source={{ html: MAP_HTML }}
+                source={{ html: MAP_HTML.replace('__ORS_API_KEY__', process.env.EXPO_PUBLIC_ORS_API_KEY || '') }}
                 style={StyleSheet.absoluteFill}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
