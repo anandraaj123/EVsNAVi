@@ -25,7 +25,7 @@ import {
   ShieldAlert,
 } from 'lucide-react-native';
 import { auth } from '../config/firebase';
-import { signOut } from '@firebase/auth';
+import { signOut } from 'firebase/auth';
 import { EVInfo } from './EVSetupScreen';
 
 const { width } = Dimensions.get('window');

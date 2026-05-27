@@ -17,7 +17,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, Eye, EyeOff, Navigation, Globe, ArrowLeft } from 'lucide-react-native';
 import { auth } from '../config/firebase';
-import { signInWithEmailAndPassword } from '@firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const { width, height } = Dimensions.get('window');
 

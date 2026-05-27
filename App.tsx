@@ -7,7 +7,7 @@ import EVSetupScreen, { EVInfo } from './src/screens/EVSetupScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { auth } from './src/config/firebase';
-import { onAuthStateChanged, User } from '@firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'signup' | 'evSetup' | 'dashboard' | 'profile'>('splash');
