@@ -6,36 +6,59 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import EVSetupScreen, { EVInfo } from './src/screens/EVSetupScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import { auth } from './src/config/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface AppUser {
+  uid: string;
+  email: string;
+}
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'signup' | 'evSetup' | 'dashboard' | 'profile'>('splash');
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [evInfo, setEvInfo] = useState<EVInfo | null>(null);
 
-  // Monitor Firebase Auth State Changes
+  // Validate active backend session token on app startup
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (initializing) {
+    const checkSession = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          setUser(null);
+          setCurrentScreen('splash');
+          return;
+        }
+
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
+        const response = await fetch(`${apiUrl}/auth/me`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          setCurrentScreen('dashboard');
+        } else {
+          // Token expired or invalid, remove it
+          await AsyncStorage.removeItem('userToken');
+          setUser(null);
+          setCurrentScreen('login');
+        }
+      } catch (error) {
+        console.log('Session verification error:', error);
+        setUser(null);
+        setCurrentScreen('login');
+      } finally {
         setInitializing(false);
       }
-      
-      // Dynamic routing based on Auth state
-      if (currentUser) {
-        // Route to EV setup screen if they are transitioning from login/signup,
-        // otherwise let them go straight to dashboard if it was an auto-session restore
-        setCurrentScreen((prev) => (prev === 'login' || prev === 'signup' ? 'evSetup' : 'dashboard'));
-      } else {
-        // Only divert back to login if they were not on splash
-        setCurrentScreen((prev) => (prev === 'splash' ? 'splash' : 'login'));
-      }
-    });
+    };
 
-    return unsubscribe;
-  }, [initializing]);
+    checkSession();
+  }, []);
 
   const handleFinishSplash = () => {
     // If user is already loaded/logged in during splash, go straight to dashboard!
@@ -127,6 +150,7 @@ export default function App() {
           onLogoutSuccess={handleLogoutSuccess}
           onCustomizeEV={handleCustomizeEV}
           evInfo={evInfo || undefined}
+          userEmail={user?.email}
         />
       )}
     </View>

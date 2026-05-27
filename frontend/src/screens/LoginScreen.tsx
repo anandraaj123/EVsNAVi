@@ -16,8 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, Eye, EyeOff, Navigation, Globe, ArrowLeft } from 'lucide-react-native';
-import { auth } from '../config/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -64,24 +63,30 @@ export default function LoginScreen({ onLoginSuccess, onBack, onSignUpPress }: L
     setLoadingMessage('Securing tunnel...');
 
     try {
-      // Real Firebase Login
-      await signInWithEmailAndPassword(auth, email, password);
-      setIsLoading(false);
-      onLoginSuccess();
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        await AsyncStorage.setItem('userToken', data.token);
+        setIsLoading(false);
+        onLoginSuccess();
+      } else {
+        setIsLoading(false);
+        const errMsg = data.error || 'Authentication failed. Please verify your credentials.';
+        alert(errMsg);
+      }
     } catch (error: any) {
       setIsLoading(false);
-      console.error(error);
-
-      // Friendly Firebase errors mapping
-      let errMsg = 'Authentication failed. Please verify your credentials.';
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-        errMsg = 'Invalid email address or password.';
-      } else if (error.code === 'auth/user-not-found') {
-        errMsg = 'No EV profile found for this email address.';
-      } else if (error.code === 'auth/invalid-email') {
-        errMsg = 'The email address format is invalid.';
-      }
-      alert(errMsg);
+      console.error('Login connection error:', error);
+      alert('Failed to connect to the authentication server. Please try again.');
     }
   };
 

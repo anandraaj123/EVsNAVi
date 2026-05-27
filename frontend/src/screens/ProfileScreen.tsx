@@ -24,8 +24,7 @@ import {
   ArrowLeft,
   ShieldAlert,
 } from 'lucide-react-native';
-import { auth } from '../config/firebase';
-import { signOut } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EVInfo } from './EVSetupScreen';
 
 const { width } = Dimensions.get('window');
@@ -35,10 +34,11 @@ interface ProfileScreenProps {
   onLogoutSuccess: () => void;
   onCustomizeEV: () => void;
   evInfo?: EVInfo;
+  userEmail?: string;
 }
 
-export default function ProfileScreen({ onBack, onLogoutSuccess, onCustomizeEV, evInfo }: ProfileScreenProps) {
-  const userEmail = auth.currentUser?.email || 'ev.pilot@evsnavi.com';
+export default function ProfileScreen({ onBack, onLogoutSuccess, onCustomizeEV, evInfo, userEmail: propsUserEmail }: ProfileScreenProps) {
+  const userEmail = propsUserEmail || 'ev.pilot@evsnavi.com';
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -62,10 +62,21 @@ export default function ProfileScreen({ onBack, onLogoutSuccess, onCustomizeEV, 
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const token = await AsyncStorage.getItem('userToken');
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
+      if (token) {
+        await fetch(`${apiUrl}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+      await AsyncStorage.removeItem('userToken');
       onLogoutSuccess();
     } catch (error) {
       console.error('[ProfileScreen] Error signing out:', error);
+      await AsyncStorage.removeItem('userToken');
       onLogoutSuccess();
     }
   };

@@ -26,9 +26,6 @@ import {
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
 
-import { auth } from '../config/firebase';
-import { signOut } from 'firebase/auth';
-
 const { width } = Dimensions.get('window');
 
 import { EVInfo } from './EVSetupScreen';
@@ -274,47 +271,30 @@ const MAP_HTML = `
             }
         };
 
-        // Real-time directions API query helper (OpenRouteService with OSRM fallback)
+        // Real-time directions API query helper proxying via Backend
         window.fetchRealRoute = function(startLat, startLng, endLat, endLng) {
-            // ORS Free plan requires an API key - we provide a standard active playground key, and fallback seamlessly!
-            const ORS_API_KEY = '__ORS_API_KEY__';
-            const orsUrl = 'https://api.openrouteservice.org/v2/directions/driving-car?api_key=' + ORS_API_KEY + '&start=' + startLng + ',' + startLat + '&end=' + endLng + ',' + endLat;
+            const apiUrl = '__API_URL__';
+            const url = apiUrl + '/route?startLat=' + startLat + '&startLng=' + startLng + '&endLat=' + endLat + '&endLng=' + endLng;
 
-            fetch(orsUrl)
+            fetch(url)
                 .then(function(res) {
-                    if (!res.ok) throw new Error('ORS returned non-ok status');
+                    if (!res.ok) throw new Error('API returned non-ok status');
                     return res.json();
                 })
                 .then(function(data) {
-                    if (data.features && data.features[0] && data.features[0].geometry) {
-                        const coords = data.features[0].geometry.coordinates;
-                        drawRouteOnMap(coords);
+                    if (data.coordinates) {
+                        drawRouteOnMap(data.coordinates);
                     } else {
-                        throw new Error('Invalid ORS payload');
+                        throw new Error('Invalid routing payload');
                     }
                 })
                 .catch(function(err) {
-                    console.log('ORS Error/Unavailable. Falling back to OSRM:', err);
-                    
-                    // Keyless OSRM Public Routing Server (extremely fast, zero authorization required)
-                    const osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' + startLng + ',' + startLat + ';' + endLng + ',' + endLat + '?overview=full&geometries=geojson';
-                    
-                    fetch(osrmUrl)
-                        .then(function(res) { return res.json(); })
-                        .then(function(data) {
-                            if (data.routes && data.routes[0] && data.routes[0].geometry) {
-                                const coords = data.routes[0].geometry.coordinates;
-                                drawRouteOnMap(coords);
-                            }
-                        })
-                        .catch(function(osrmErr) {
-                            console.log('Fallback OSRM Error:', osrmErr);
-                            // Visual emergency fallback (straight path vector)
-                            drawRouteOnMap([
-                                [startLng, startLat],
-                                [endLng, endLat]
-                            ]);
-                        });
+                    console.log('Route proxy fetch error:', err);
+                    // Visual emergency fallback (straight path vector)
+                    drawRouteOnMap([
+                        [startLng, startLat],
+                        [endLng, endLat]
+                    ]);
                 });
         };
 
@@ -470,10 +450,10 @@ export default function DashboardScreen({ onProfilePress, evInfo }: DashboardScr
   }
   
   const [stations, setStations] = useState<OCMStation[]>([]);
-  const OCM_API_KEY = process.env.EXPO_PUBLIC_OCM_API_KEY || ''; // Loaded from environment variables
 
   const fetchNearbyStations = async (lat: number, lng: number) => {
-    const url = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${lng}&distance=15&maxresults=5&key=${OCM_API_KEY}`;
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
+    const url = `${apiUrl}/stations?latitude=${lat}&longitude=${lng}`;
     try {
       const response = await fetch(url, {
         headers: {
@@ -829,7 +809,7 @@ export default function DashboardScreen({ onProfilePress, evInfo }: DashboardScr
               <WebView
                 ref={webviewRef}
                 originWhitelist={['*']}
-                source={{ html: MAP_HTML.replace('__ORS_API_KEY__', process.env.EXPO_PUBLIC_ORS_API_KEY || '') }}
+                source={{ html: MAP_HTML.replace('__API_URL__', process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api') }}
                 style={StyleSheet.absoluteFill}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}

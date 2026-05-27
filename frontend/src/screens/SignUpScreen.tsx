@@ -16,8 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, Eye, EyeOff, Navigation, Globe, ArrowLeft } from 'lucide-react-native';
-import { auth } from '../config/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -75,24 +74,31 @@ export default function SignUpScreen({ onSignUpSuccess, onBackToLogin }: SignUpS
     setLoadingMessage('Registering EV Profile...');
 
     try {
-      // Real Firebase Registration
-      await createUserWithEmailAndPassword(auth, email, password);
-      setIsLoading(false);
-      onSignUpSuccess();
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
+      const response = await fetch(`${apiUrl}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        await AsyncStorage.setItem('userToken', data.token);
+        setIsLoading(false);
+        onSignUpSuccess();
+      } else {
+        setIsLoading(false);
+        // Map backend errors (which mirror Firebase auth errors)
+        const errMsg = data.error || 'Failed to create EV account. Please try again.';
+        alert(errMsg);
+      }
     } catch (error: any) {
       setIsLoading(false);
-      console.error(error);
-
-      // Friendly Firebase errors mapping
-      let errMsg = 'Failed to create EV account. Please try again.';
-      if (error.code === 'auth/email-already-in-use') {
-        errMsg = 'This email address is already in use by another EV profile.';
-      } else if (error.code === 'auth/invalid-email') {
-        errMsg = 'The email address format is invalid.';
-      } else if (error.code === 'auth/weak-password') {
-        errMsg = 'The password is too weak. Please use a stronger password.';
-      }
-      alert(errMsg);
+      console.error('Signup connection error:', error);
+      alert('Failed to connect to the authentication server. Please try again.');
     }
   };
 
