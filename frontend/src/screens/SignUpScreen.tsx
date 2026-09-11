@@ -13,6 +13,7 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, Eye, EyeOff, Navigation, Globe, ArrowLeft } from 'lucide-react-native';
@@ -128,7 +129,11 @@ export default function SignUpScreen({ onSignUpSuccess, onBackToLogin }: SignUpS
             {/* Header section with brand */}
             <View style={styles.header}>
               <View style={styles.logoBadge}>
-                <Navigation size={28} color="#10B981" />
+                <Image
+                  source={require('../../assets/logo1.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.title}>Register Profile</Text>
               <Text style={styles.subtitle}>Create your secure EV navigation account</Text>
@@ -299,19 +304,25 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   logoBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.25)',
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
   },
   title: {
     fontSize: 24,

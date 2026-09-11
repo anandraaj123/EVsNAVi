@@ -33,11 +33,13 @@ app.use(express.json());
 import authRouter from './routes/auth';
 import stationsRouter from './routes/stations';
 import routeRouter from './routes/route';
+import aiRouter from './routes/ai';
 
 // Routes Mount
 app.use('/api/auth', authRouter);
 app.use('/api/stations', stationsRouter);
 app.use('/api/route', routeRouter);
+app.use('/api/ai', aiRouter);
 
 // Health Check
 app.get('/health', (req, res) => {

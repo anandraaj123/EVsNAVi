@@ -8,10 +8,23 @@ import {
 import { firebaseApp } from '../index';
 
 const router = Router();
-const auth = getAuth(firebaseApp);
+
+let auth: any = null;
+try {
+  auth = getAuth(firebaseApp);
+} catch (error: any) {
+  console.warn('[Firebase Auth] Initialization failed. Auth endpoints will not be available:', error.message);
+}
+
+function checkAuth(req: Request, res: Response, next: () => void) {
+  if (!auth) {
+    return res.status(500).json({ error: 'Authentication service not initialized. Check server environment variables.' });
+  }
+  next();
+}
 
 // POST /api/auth/signup
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', checkAuth, async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -41,7 +54,7 @@ router.post('/signup', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', checkAuth, async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -75,7 +88,7 @@ router.post('/login', async (req: Request, res: Response) => {
 // Note: We can decode/verify or get user details.
 // A simple verification is to check if headers have Authorization: Bearer <token>.
 // We can use Firebase's getIdTokenResult or similar, or just check the current auth state or verify it.
-router.get('/me', async (req: Request, res: Response) => {
+router.get('/me', checkAuth, async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });
@@ -132,7 +145,7 @@ router.get('/me', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/logout
-router.post('/logout', async (req: Request, res: Response) => {
+router.post('/logout', checkAuth, async (req: Request, res: Response) => {
   try {
     await firebaseSignOut(auth);
     return res.json({ message: 'Logged out successfully' });

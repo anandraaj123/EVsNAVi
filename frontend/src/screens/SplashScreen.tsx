@@ -217,7 +217,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           
           <View style={styles.logoContainer}>
             <Image
-              source={require('../../assets/logo.png')}
+              source={require('../../assets/logo1.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -325,23 +325,24 @@ const styles = StyleSheet.create({
     marginVertical: height * 0.02,
   },
   logoContainer: {
-    width: width * 0.5,
-    height: width * 0.5,
-    borderRadius: width * 0.25,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 242, 254, 0.25)',
+    width: width * 0.48,
+    height: width * 0.48,
+    borderRadius: 36,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: 'rgba(0, 242, 254, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#00F2FE',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOpacity: 0.45,
+    shadowRadius: 24,
+    elevation: 12,
+    overflow: 'hidden',
   },
   logo: {
-    width: '90%',
-    height: '90%',
+    width: '88%',
+    height: '88%',
   },
   pulseRing: {
     position: 'absolute',

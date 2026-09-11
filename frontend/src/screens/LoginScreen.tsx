@@ -13,6 +13,7 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Lock, Eye, EyeOff, Navigation, Globe, ArrowLeft } from 'lucide-react-native';
@@ -116,7 +117,11 @@ export default function LoginScreen({ onLoginSuccess, onBack, onSignUpPress }: L
             {/* Header section with brand */}
             <View style={styles.header}>
               <View style={styles.logoBadge}>
-                <Navigation size={28} color="#00F2FE" />
+                <Image
+                  source={require('../../assets/logo1.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.title}>Welcome Back</Text>
               <Text style={styles.subtitle}>Sign in to navigate your green journeys</Text>
@@ -269,19 +274,25 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   logoBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(0, 242, 254, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 242, 254, 0.25)',
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0, 242, 254, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     shadowColor: '#00F2FE',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
   },
   title: {
     fontSize: 24,

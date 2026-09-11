@@ -199,20 +199,20 @@ export default function ProfileScreen({ onBack, onLogoutSuccess, onCustomizeEV, 
 
 
 
-          {/* 4. LOGOUT BUTTON */}
+          {/* 4. RECONFIGURE EV BUTTON */}
           <TouchableOpacity
-            onPress={handleLogout}
+            onPress={onCustomizeEV}
             activeOpacity={0.8}
             style={styles.logoutButtonWrapper}
           >
             <LinearGradient
-              colors={['#EF4444', '#DC2626']}
+              colors={['#0284C7', '#0369A1']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.logoutButton}
             >
-              <LogOut size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-              <Text style={styles.logoutButtonText}>SECURE SIGN OUT</Text>
+              <Car size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.logoutButtonText}>CHANGE / RECONFIGURE EV</Text>
             </LinearGradient>
           </TouchableOpacity>
 
