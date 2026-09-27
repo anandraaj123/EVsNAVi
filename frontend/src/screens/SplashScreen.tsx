@@ -67,7 +67,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
     // 2. Pulse animations for GPS tracking circles
     const pulseLoop = () => {
       pulseAnim1.setValue(0);
-      pulseAnim2.setValue(0);
+      pulseAnim2.setValue(0); 
       
       Animated.parallel([
         Animated.timing(pulseAnim1, {

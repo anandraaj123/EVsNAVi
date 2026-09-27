@@ -41,6 +41,8 @@ export interface StationItem {
   power: number;
   connectorType: string;
   availablePorts: number;
+  city?: string;
+  isStateHub?: boolean;
 }
 
 interface Message {
@@ -127,11 +129,15 @@ export default function AIAssistantModal({
     if (!textToSend) setInputQuery('');
     setIsLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
     try {
       const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api';
       const response = await fetch(`${apiUrl}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           message: query,
           evInfo,
@@ -139,6 +145,7 @@ export default function AIAssistantModal({
           nearbyStations,
         }),
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('AI API returned status ' + response.status);
